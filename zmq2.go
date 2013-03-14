@@ -408,13 +408,13 @@ func Proxy(frontend, backend, capture *Socket) error {
 		if err != nil {
 			return err
 		}
-		for socket := range sockets {
+		for _, socket := range sockets {
 			for more := true; more; {
-				msg, err := socket.RecvBytes(0)
+				msg, err := socket.Soc.RecvBytes(0)
 				if err != nil {
 					return err
 				}
-				more, err = socket.GetRcvmore()
+				more, err = socket.Soc.GetRcvmore()
 				if err != nil {
 					return err
 				}
@@ -430,7 +430,7 @@ func Proxy(frontend, backend, capture *Socket) error {
 					}
 				}
 
-				switch socket {
+				switch socket.Soc {
 				case frontend:
 					_, err = backend.SendBytes(msg, fl)
 				case backend:
