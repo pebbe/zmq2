@@ -7,7 +7,7 @@
 package main
 
 import (
-	zmq "github.com/pebbe/zmq3"
+	zmq "github.com/pebbe/zmq2"
 
 	"fmt"
 	"log"
@@ -44,7 +44,7 @@ func client_task() {
 	for {
 		time.Sleep(10 * time.Millisecond)
 		mu.Lock()
-		msg, err := client.RecvMessage(zmq.DONTWAIT)
+		msg, err := client.RecvMessage(zmq.NOBLOCK)
 		if err == nil {
 			id, _ := client.GetIdentity()
 			fmt.Println(msg[0], id)

@@ -5,7 +5,7 @@
 package main
 
 import (
-	zmq "github.com/pebbe/zmq3"
+	zmq "github.com/pebbe/zmq2"
 
 	"fmt"
 	"time"
@@ -30,7 +30,7 @@ func main() {
 
 		//  Process any waiting tasks
 		for {
-			task, err := receiver.Recv(zmq.DONTWAIT)
+			task, err := receiver.Recv(zmq.NOBLOCK)
 			if err != nil {
 				break
 			}
@@ -40,7 +40,7 @@ func main() {
 
 		//  Process any waiting weather updates
 		for {
-			udate, err := subscriber.Recv(zmq.DONTWAIT)
+			udate, err := subscriber.Recv(zmq.NOBLOCK)
 			if err != nil {
 				break
 			}

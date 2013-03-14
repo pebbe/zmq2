@@ -1,4 +1,4 @@
-package zmq3
+package zmq2
 
 /*
 #include <zmq.h>
@@ -46,171 +46,60 @@ func (soc *Socket) setUInt64(opt C.int, value uint64) error {
 	return nil
 }
 
-// ZMQ_SNDHWM: Set high water mark for outbound messages
+// ZMQ_HWM: Set high water mark
 //
-// See: http://api.zeromq.org/3-2:zmq-setsockopt#toc3
-//
-// In 0MQ version 2, sets high water mark for both inbound and outbound messages
-func (soc *Socket) SetSndhwm(value int) error {
-	if major < 3 {
-		return soc.setUInt64(C.ZMQ_SNDHWM, uint64(value))
-	}
-	return soc.setInt(C.ZMQ_SNDHWM, value)
+// See: http://api.zeromq.org/2-2:zmq-setsockopt#toc3
+func (soc *Socket) SetHwm(value uint64) error {
+	return soc.setUInt64(C.ZMQ_HWM, value)
 }
 
-// ZMQ_RCVHWM: Set high water mark for inbound messages
+// ZMQ_SWAP: Set disk offload size
 //
-// See: http://api.zeromq.org/3-2:zmq-setsockopt#toc4
-//
-// In 0MQ version 2, sets high water mark for both inbound and outbound messages
-func (soc *Socket) SetRcvhwm(value int) error {
-	if major < 3 {
-		return soc.setUInt64(C.ZMQ_RCVHWM, uint64(value))
-	}
-	return soc.setInt(C.ZMQ_RCVHWM, value)
+// See: http://api.zeromq.org/2-2:zmq-setsockopt#toc4
+func (soc *Socket) SetSwap(value int64) error {
+	return soc.setInt64(C.ZMQ_SWAP, value)
 }
 
 // ZMQ_AFFINITY: Set I/O thread affinity
 //
-// See: http://api.zeromq.org/3-2:zmq-setsockopt#toc5
+// See: http://api.zeromq.org/2-2:zmq-setsockopt#toc5
 func (soc *Socket) SetAffinity(value uint64) error {
 	return soc.setUInt64(C.ZMQ_AFFINITY, value)
 }
 
+// ZMQ_IDENTITY: Set socket identity
+//
+// See: http://api.zeromq.org/2-2:zmq-setsockopt#toc6
+func (soc *Socket) SetIdentity(value string) error {
+	return soc.setString(C.ZMQ_IDENTITY, value)
+}
+
 // ZMQ_SUBSCRIBE: Establish message filter
 //
-// See: http://api.zeromq.org/3-2:zmq-setsockopt#toc6
+// See: http://api.zeromq.org/2-2:zmq-setsockopt#toc7
 func (soc *Socket) SetSubscribe(filter string) error {
 	return soc.setString(C.ZMQ_SUBSCRIBE, filter)
 }
 
 // ZMQ_UNSUBSCRIBE: Remove message filter
 //
-// See: http://api.zeromq.org/3-2:zmq-setsockopt#toc7
+// See: http://api.zeromq.org/2-2:zmq-setsockopt#toc8
 func (soc *Socket) SetUnsubscribe(filter string) error {
 	return soc.setString(C.ZMQ_UNSUBSCRIBE, filter)
-}
-
-// ZMQ_IDENTITY: Set socket identity
-//
-// See: http://api.zeromq.org/3-2:zmq-setsockopt#toc8
-func (soc *Socket) SetIdentity(value string) error {
-	return soc.setString(C.ZMQ_IDENTITY, value)
-}
-
-// ZMQ_RATE: Set multicast data rate
-//
-// See: http://api.zeromq.org/3-2:zmq-setsockopt#toc9
-func (soc *Socket) SetRate(value int) error {
-	if major < 3 {
-		return soc.setInt64(C.ZMQ_RATE, int64(value))
-	}
-	return soc.setInt(C.ZMQ_RATE, value)
-}
-
-// ZMQ_RECOVERY_IVL: Set multicast recovery interval
-//
-// See: http://api.zeromq.org/3-2:zmq-setsockopt#toc10
-func (soc *Socket) SetRecoveryIvl(value time.Duration) error {
-	if major < 3 {
-		val := int64(value / time.Millisecond)
-		return soc.setInt64(C.ZMQ_RECOVERY_IVL_MSEC, val)
-	}
-	val := int(value / time.Millisecond)
-	return soc.setInt(C.ZMQ_RECOVERY_IVL, val)
-}
-
-// ZMQ_SNDBUF: Set kernel transmit buffer size
-//
-// See: http://api.zeromq.org/3-2:zmq-setsockopt#toc11
-func (soc *Socket) SetSndbuf(value int) error {
-	if major < 3 {
-		return soc.setUInt64(C.ZMQ_SNDBUF, uint64(value))
-	}
-	return soc.setInt(C.ZMQ_SNDBUF, value)
-}
-
-// ZMQ_RCVBUF: Set kernel receive buffer size
-//
-// See: http://api.zeromq.org/3-2:zmq-setsockopt#toc12
-func (soc *Socket) SetRcvbuf(value int) error {
-	if major < 3 {
-		return soc.setUInt64(C.ZMQ_RCVBUF, uint64(value))
-	}
-	return soc.setInt(C.ZMQ_RCVBUF, value)
-}
-
-// ZMQ_LINGER: Set linger period for socket shutdown
-//
-// Use -1 for infinite
-//
-// See: http://api.zeromq.org/3-2:zmq-setsockopt#toc13
-func (soc *Socket) SetLinger(value time.Duration) error {
-	val := int(value / time.Millisecond)
-	if value == -1 {
-		val = -1
-	}
-	return soc.setInt(C.ZMQ_LINGER, val)
-}
-
-// ZMQ_RECONNECT_IVL: Set reconnection interval
-//
-// Use -1 for no reconnection
-//
-// See: http://api.zeromq.org/3-2:zmq-setsockopt#toc14
-func (soc *Socket) SetReconnectIvl(value time.Duration) error {
-	val := int(value / time.Millisecond)
-	if value == -1 {
-		val = -1
-	}
-	return soc.setInt(C.ZMQ_RECONNECT_IVL, val)
-}
-
-// ZMQ_RECONNECT_IVL_MAX: Set maximum reconnection interval
-//
-// See: http://api.zeromq.org/3-2:zmq-setsockopt#toc15
-func (soc *Socket) SetReconnectIvlMax(value time.Duration) error {
-	val := int(value / time.Millisecond)
-	return soc.setInt(C.ZMQ_RECONNECT_IVL_MAX, val)
-}
-
-// ZMQ_BACKLOG: Set maximum length of the queue of outstanding connections
-//
-// See: http://api.zeromq.org/3-2:zmq-setsockopt#toc16
-func (soc *Socket) SetBacklog(value int) error {
-	return soc.setInt(C.ZMQ_BACKLOG, value)
-}
-
-// ZMQ_MAXMSGSIZE: Maximum acceptable inbound message size
-//
-// See: http://api.zeromq.org/3-2:zmq-setsockopt#toc17
-//
-// Returns ErrorNotImplemented in 0MQ version 2
-func (soc *Socket) SetMaxmsgsize(value int64) error {
-	if major < 3 {
-		return ErrorNotImplemented
-	}
-	return soc.setInt64(C.ZMQ_MAXMSGSIZE, value)
-}
-
-// ZMQ_MULTICAST_HOPS: Maximum network hops for multicast packets
-//
-// See: http://api.zeromq.org/3-2:zmq-setsockopt#toc18
-//
-// Returns ErrorNotImplemented in 0MQ version 2
-func (soc *Socket) SetMulticastHops(value int) error {
-	if major < 3 {
-		return ErrorNotImplemented
-	}
-	return soc.setInt(C.ZMQ_MULTICAST_HOPS, value)
 }
 
 // ZMQ_RCVTIMEO: Maximum time before a recv operation returns with EAGAIN
 //
 // Use -1 for infinite
 //
-// See: http://api.zeromq.org/3-2:zmq-setsockopt#toc19
+// Returns ErrorNotImplemented in 0MQ version 2.1
+//
+// See: http://api.zeromq.org/2-2:zmq-setsockopt#toc9
 func (soc *Socket) SetRcvtimeo(value time.Duration) error {
+	major, minor, _ := Version()
+	if major == 2 && minor < 2 {
+		return ErrorNotImplemented
+	}
 	val := int(value / time.Millisecond)
 	if value == -1 {
 		val = -1
@@ -222,8 +111,14 @@ func (soc *Socket) SetRcvtimeo(value time.Duration) error {
 //
 // Use -1 for infinite
 //
-// See: http://api.zeromq.org/3-2:zmq-setsockopt#toc20
+// Returns ErrorNotImplemented in 0MQ version 2.1
+//
+// See: http://api.zeromq.org/2-2:zmq-setsockopt#toc10
 func (soc *Socket) SetSndtimeo(value time.Duration) error {
+	major, minor, _ := Version()
+	if major == 2 && minor < 2 {
+		return ErrorNotImplemented
+	}
 	val := int(value / time.Millisecond)
 	if value == -1 {
 		val = -1
@@ -231,118 +126,93 @@ func (soc *Socket) SetSndtimeo(value time.Duration) error {
 	return soc.setInt(C.ZMQ_SNDTIMEO, val)
 }
 
-// ZMQ_IPV4ONLY: Use IPv4-only sockets
+// ZMQ_RATE: Set multicast data rate
 //
-// See: http://api.zeromq.org/3-2:zmq-setsockopt#toc21
+// See: http://api.zeromq.org/2-2:zmq-setsockopt#toc11
+func (soc *Socket) SetRate(value int64) error {
+	return soc.setInt64(C.ZMQ_RATE, value)
+}
+
+// ZMQ_RECOVERY_IVL: Set multicast recovery interval
 //
-// Returns ErrorNotImplemented in 0MQ version 2
-func (soc *Socket) SetIpv4only(value bool) error {
-	if major < 3 {
-		return ErrorNotImplemented
+// Note: value is of type time.Duration
+//
+// See: http://api.zeromq.org/2-2:zmq-setsockopt#toc12
+func (soc *Socket) SetRecoveryIvl(value time.Duration) error {
+	val := int64(value / time.Second)
+	return soc.setInt64(C.ZMQ_RECOVERY_IVL, val)
+}
+
+// ZMQ_RECOVERY_IVL_MSEC: Set multicast recovery interval in milliseconds
+//
+// Note: value is of type time.Duration
+//
+// See: http://api.zeromq.org/2-2:zmq-setsockopt#toc13
+func (soc *Socket) SetRecoveryIvlMsec(value time.Duration) error {
+	val := int64(value / time.Millisecond)
+	if value < 0 {
+		val = -1
 	}
-	val := 0
+	return soc.setInt64(C.ZMQ_RECOVERY_IVL_MSEC, val)
+}
+
+// ZMQ_MCAST_LOOP: Control multicast loop-back
+//
+// See: http://api.zeromq.org/2-2:zmq-setsockopt#toc14
+func (soc *Socket) SetMcastLoop(value bool) error {
+	val := int64(0)
 	if value {
 		val = 1
 	}
-	return soc.setInt(C.ZMQ_IPV4ONLY, val)
+	return soc.setInt64(C.ZMQ_MCAST_LOOP, val)
 }
 
-// ZMQ_DELAY_ATTACH_ON_CONNECT: Accept messages only when connections are made
+// ZMQ_SNDBUF: Set kernel transmit buffer size
 //
-// See: http://api.zeromq.org/3-2:zmq-setsockopt#toc22
-//
-// Returns ErrorNotImplemented in 0MQ version 2
-func (soc *Socket) SetDelayAttachOnConnect(value bool) error {
-	if major < 3 {
-		return ErrorNotImplemented
-	}
-	val := int(0)
-	if value {
-		val = 1
-	}
-	return soc.setInt(C.ZMQ_DELAY_ATTACH_ON_CONNECT, val)
+// See: http://api.zeromq.org/2-2:zmq-setsockopt#toc15
+func (soc *Socket) SetSndbuf(value uint64) error {
+	return soc.setUInt64(C.ZMQ_SNDBUF, value)
 }
 
-// ZMQ_ROUTER_MANDATORY: accept only routable messages on ROUTER sockets
+// ZMQ_RCVBUF: Set kernel receive buffer size
 //
-// See: http://api.zeromq.org/3-2:zmq-setsockopt#toc23
-//
-// Returns ErrorNotImplemented in 0MQ version 2
-func (soc *Socket) SetRouterMandatory(value int) error {
-	if major < 3 {
-		return ErrorNotImplemented
-	}
-	return soc.setInt(C.ZMQ_ROUTER_MANDATORY, value)
+// See: http://api.zeromq.org/2-2:zmq-setsockopt#toc16
+func (soc *Socket) SetRcvbuf(value uint64) error {
+	return soc.setUInt64(C.ZMQ_RCVBUF, value)
 }
 
-// ZMQ_XPUB_VERBOSE: provide all subscription messages on XPUB sockets
+// ZMQ_LINGER: Set linger period for socket shutdown
 //
-// See: http://api.zeromq.org/3-2:zmq-setsockopt#toc24
+// Use -1 for infinite
 //
-// Returns ErrorNotImplemented in 0MQ version 2
-func (soc *Socket) SetXpubVerbose(value int) error {
-	if major < 3 {
-		return ErrorNotImplemented
+// See: http://api.zeromq.org/2-2:zmq-setsockopt#toc17
+func (soc *Socket) SetLinger(value time.Duration) error {
+	val := int(value / time.Millisecond)
+	if value == -1 {
+		val = -1
 	}
-	return soc.setInt(C.ZMQ_XPUB_VERBOSE, value)
+	return soc.setInt(C.ZMQ_LINGER, val)
 }
 
-// ZMQ_TCP_KEEPALIVE: Override SO_KEEPALIVE socket option
+// ZMQ_RECONNECT_IVL: Set reconnection interval
 //
-// See: http://api.zeromq.org/3-2:zmq-setsockopt#toc25
-//
-// Returns ErrorNotImplemented in 0MQ version 2
-func (soc *Socket) SetTcpKeepalive(value int) error {
-	if major < 3 {
-		return ErrorNotImplemented
-	}
-	return soc.setInt(C.ZMQ_TCP_KEEPALIVE, value)
+// See: http://api.zeromq.org/2-2:zmq-setsockopt#toc18
+func (soc *Socket) SetReconnectIvl(value time.Duration) error {
+	val := int(value / time.Millisecond)
+	return soc.setInt(C.ZMQ_RECONNECT_IVL, val)
 }
 
-// ZMQ_TCP_KEEPALIVE_IDLE: Override TCP_KEEPCNT(or TCP_KEEPALIVE on some OS)
+// ZMQ_RECONNECT_IVL_MAX: Set maximum reconnection interval
 //
-// See: http://api.zeromq.org/3-2:zmq-setsockopt#toc26
-//
-// Returns ErrorNotImplemented in 0MQ version 2
-func (soc *Socket) SetTcpKeepaliveIdle(value int) error {
-	if major < 3 {
-		return ErrorNotImplemented
-	}
-	return soc.setInt(C.ZMQ_TCP_KEEPALIVE_IDLE, value)
+// See: http://api.zeromq.org/2-2:zmq-setsockopt#toc19
+func (soc *Socket) SetReconnectIvlMax(value time.Duration) error {
+	val := int(value / time.Millisecond)
+	return soc.setInt(C.ZMQ_RECONNECT_IVL_MAX, val)
 }
 
-// ZMQ_TCP_KEEPALIVE_CNT: ZMQ_TCP_KEEPALIVE_CNT: Override TCP_KEEPCNT socket option
+// ZMQ_BACKLOG: Set maximum length of the queue of outstanding connections
 //
-// See: http://api.zeromq.org/3-2:zmq-setsockopt#toc27
-//
-// Returns ErrorNotImplemented in 0MQ version 2
-func (soc *Socket) SetTcpKeepaliveCnt(value int) error {
-	if major < 3 {
-		return ErrorNotImplemented
-	}
-	return soc.setInt(C.ZMQ_TCP_KEEPALIVE_CNT, value)
-}
-
-// ZMQ_TCP_KEEPALIVE_INTVL: Override TCP_KEEPINTVL socket option
-//
-// See: http://api.zeromq.org/3-2:zmq-setsockopt#toc28
-//
-// Returns ErrorNotImplemented in 0MQ version 2
-func (soc *Socket) SetTcpKeepaliveIntvl(value int) error {
-	if major < 3 {
-		return ErrorNotImplemented
-	}
-	return soc.setInt(C.ZMQ_TCP_KEEPALIVE_INTVL, value)
-}
-
-// ZMQ_TCP_ACCEPT_FILTER: Assign filters to allow new TCP connections
-//
-// See: http://api.zeromq.org/3-2:zmq-setsockopt#toc29
-//
-// Returns ErrorNotImplemented in 0MQ version 2
-func (soc *Socket) SetTcpAcceptFilter(filter string) error {
-	if major < 3 {
-		return ErrorNotImplemented
-	}
-	return soc.setString(C.ZMQ_TCP_ACCEPT_FILTER, filter)
+// See: http://api.zeromq.org/2-2:zmq-setsockopt#toc20
+func (soc *Socket) SetBacklog(value int) error {
+	return soc.setInt(C.ZMQ_BACKLOG, value)
 }
