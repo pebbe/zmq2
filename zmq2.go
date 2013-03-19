@@ -42,6 +42,7 @@ var (
 
 var (
 	ctx           unsafe.Pointer
+	old           []unsafe.Pointer
 	nr_of_threads int
 )
 
@@ -99,8 +100,9 @@ func SetIoThreads(n int) error {
 		if c == nil {
 			return errget(err)
 		}
-		nr_of_threads = n
+		old = append(old, ctx) // keep a reference, to prevent garbage collection
 		ctx = c
+		nr_of_threads = n
 	}
 	return nil
 }
