@@ -30,6 +30,7 @@ import "C"
 
 import (
 	"errors"
+	"fmt"
 	"runtime"
 	"strings"
 	"syscall"
@@ -253,7 +254,11 @@ Socket as string.
 */
 func (soc Socket) String() string {
 	t, _ := soc.GetType()
-	return "Socket(" + t.String() + ")"
+	i, err := soc.GetIdentity()
+	if err == nil && i != "" {
+		return fmt.Sprintf("Socket(%v,%q)", t, i)
+	}
+	return fmt.Sprintf("Socket(%v,%p)", t, soc.soc)
 }
 
 /*
