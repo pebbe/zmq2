@@ -4,6 +4,7 @@ go install github.com/pebbe/zmq2/examples/bstar
 go install github.com/pebbe/zmq2/examples/mdapi
 go install github.com/pebbe/zmq2/examples/flcliapi
 go install github.com/pebbe/zmq2/examples/kvsimple
+go install github.com/pebbe/zmq2/examples/kvmsg
 
 go get code.google.com/p/go-uuid/uuid
 
