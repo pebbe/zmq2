@@ -22,7 +22,6 @@ func main() {
 	snapshot.Connect("tcp://localhost:5556")
 
 	subscriber, _ := zmq.NewSocket(zmq.SUB)
-	subscriber.SetRcvhwm(100000) // or messages between snapshot and next are lost
 	subscriber.SetSubscribe("")
 	subscriber.Connect("tcp://localhost:5557")
 
