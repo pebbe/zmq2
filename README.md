@@ -15,7 +15,7 @@ For ZeroMQ version 3, see: http://github.com/pebbe/zmq3
 ## To do
 
  * Re-implementing the remaining examples for [ØMQ - The Guide](http://zguide.zeromq.org/page:all).
-   Currently, all examples from chapters 1 to 4 are finished.
+   Currently, all examples from chapters 1 to 5 are finished.
 
 ## Support for ZeroMQ version 2.1
 
