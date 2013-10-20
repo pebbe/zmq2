@@ -8,6 +8,7 @@ package zmq2
 import "C"
 
 import (
+	"strings"
 	"time"
 	"unsafe"
 )
@@ -18,7 +19,7 @@ func (soc *Socket) getString(opt C.int, bufsize int) (string, error) {
 	if i, err := C.zmq_getsockopt(soc.soc, opt, unsafe.Pointer(&value[0]), &size); i != 0 {
 		return "", errget(err)
 	}
-	return string(value[:int(size)]), nil
+	return strings.TrimRight(string(value[:int(size)]), "\x00"), nil
 }
 
 func (soc *Socket) getInt(opt C.int) (int, error) {
