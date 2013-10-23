@@ -1,5 +1,7 @@
 // A Go interface to ZeroMQ version 2.
 //
+// For ZeroMQ version 4, see: http://github.com/pebbe/zmq4
+//
 // For ZeroMQ version 3, see: http://github.com/pebbe/zmq3
 //
 // Requires ZeroMQ version 2.1 or 2.2

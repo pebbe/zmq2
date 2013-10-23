@@ -2,6 +2,8 @@ A Go interface to [ZeroMQ](http://www.zeromq.org/) version 2.
 
 Requires ZeroMQ version 2.1 or 2.2
 
+For ZeroMQ version 4, see: http://github.com/pebbe/zmq4
+
 For ZeroMQ version 3, see: http://github.com/pebbe/zmq3
 
 Including all examples of [ØMQ - The Guide](http://zguide.zeromq.org/page:all).
