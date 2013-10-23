@@ -110,6 +110,27 @@ func SetIoThreads(n int) error {
 	return nil
 }
 
+/*
+Terminates the current and all old contexts.
+
+For linger behavior, see: http://api.zeromq.org/2-2:zmq-term
+*/
+func Term() error {
+	n, err := C.zmq_term(ctx)
+	if n != 0 {
+		return errget(err)
+	}
+
+	for _, oldCtx := range old {
+		n, err := C.zmq_term(oldCtx)
+		if n != 0 {
+			return errget(err)
+		}
+	}
+
+	return nil
+}
+
 //. Sockets
 
 // Specifies the type of a socket, used by NewSocket()
