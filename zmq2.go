@@ -28,7 +28,7 @@ int my_msg_init_data (zmq_msg_t *msg, void *data, size_t size) {
     return zmq_msg_init_data (msg, data, size, my_free, NULL);
 }
 void *my_memcpy(void *dest, const void *src, size_t n) {
-	memcpy(dest, src, n);
+	return memcpy(dest, src, n);
 }
 */
 import "C"
