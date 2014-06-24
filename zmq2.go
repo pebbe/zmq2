@@ -34,7 +34,7 @@ var (
 )
 
 var (
-	ctx           *Context
+	defaultCtx    *Context
 	old           []*Context
 	nr_of_threads int
 )
@@ -42,8 +42,8 @@ var (
 func init() {
 	var err error
 	nr_of_threads = 1
-	ctx.ctx, err = C.zmq_init(C.int(nr_of_threads))
-	if ctx.ctx == nil {
+	defaultCtx.ctx, err = C.zmq_init(C.int(nr_of_threads))
+	if defaultCtx.ctx == nil {
 		panic("Init of ZeroMQ context failed: " + errget(err).Error())
 	}
 	old = make([]*Context, 0)
@@ -105,7 +105,7 @@ Terminates the current default and all old default contexts.
 For linger behavior, see: http://api.zeromq.org/2-2:zmq-term
 */
 func Term() error {
-	n, err := C.zmq_term(ctx.ctx)
+	n, err := C.zmq_term(defaultCtx.ctx)
 	if n != 0 {
 		return errget(err)
 	}
@@ -159,8 +159,8 @@ func SetIoThreads(n int) error {
 		if c == nil {
 			return errget(err)
 		}
-		old = append(old, ctx) // keep a reference, to prevent garbage collection
-		ctx.ctx = c
+		old = append(old, defaultCtx) // keep a reference, to prevent garbage collection
+		defaultCtx.ctx = c
 		nr_of_threads = n
 	}
 	return nil
@@ -330,16 +330,7 @@ from different goroutines without using something like a mutex.
 For a description of socket types, see: http://api.zeromq.org/2-2:zmq-socket#toc3
 */
 func NewSocket(t Type) (soc *Socket, err error) {
-	soc = &Socket{}
-	s, e := C.zmq_socket(ctx.ctx, C.int(t))
-	if s == nil {
-		err = errget(e)
-	} else {
-		soc.soc = s
-		soc.ctx = ctx
-		runtime.SetFinalizer(soc, (*Socket).Close)
-	}
-	return
+	return defaultCtx.NewSocket(t)
 }
 
 /*
