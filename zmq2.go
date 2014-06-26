@@ -42,6 +42,7 @@ var (
 func init() {
 	var err error
 	nr_of_threads = 1
+	defaultCtx = &Context{}
 	defaultCtx.ctx, err = C.zmq_init(C.int(nr_of_threads))
 	if defaultCtx.ctx == nil {
 		panic("Init of ZeroMQ context failed: " + errget(err).Error())
