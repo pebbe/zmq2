@@ -44,6 +44,7 @@ func init() {
 	nr_of_threads = 1
 	defaultCtx = &Context{}
 	defaultCtx.ctx, err = C.zmq_init(C.int(nr_of_threads))
+	defaultCtx.opened = true
 	if defaultCtx.ctx == nil {
 		panic("Init of ZeroMQ context failed: " + errget(err).Error())
 	}
@@ -80,6 +81,8 @@ A context that is not the default context.
 type Context struct {
 	ctx           unsafe.Pointer
 	nr_of_threads int
+	opened        bool
+	err           error
 }
 
 // Create a new context.
@@ -92,8 +95,10 @@ func NewContext(nr_of_threads int) (ctx *Context, err error) {
 	c, e := C.zmq_init(C.int(nr_of_threads))
 	if c == nil {
 		err = errget(e)
+		ctx.err = err
 	} else {
 		ctx.ctx = c
+		ctx.opened = true
 		ctx.nr_of_threads = nr_of_threads
 		runtime.SetFinalizer(ctx, (*Context).Term)
 	}
@@ -106,15 +111,27 @@ Terminates the current default and all old default contexts.
 For linger behavior, see: http://api.zeromq.org/2-2:zmq-term
 */
 func Term() error {
-	n, err := C.zmq_term(defaultCtx.ctx)
-	if n != 0 {
-		return errget(err)
+	if defaultCtx.opened {
+		defaultCtx.opened = false
+		n, err := C.zmq_term(defaultCtx.ctx)
+		if n != 0 {
+			defaultCtx.err = errget(err)
+		}
+	}
+	if defaultCtx.err != nil {
+		return defaultCtx.err
 	}
 
 	for _, oldCtx := range old {
-		n, err := C.zmq_term(oldCtx.ctx)
-		if n != 0 {
-			return errget(err)
+		if oldCtx.opened {
+			oldCtx.opened = false
+			n, err := C.zmq_term(oldCtx.ctx)
+			if n != 0 {
+				oldCtx.err = errget(err)
+			}
+		}
+		if oldCtx.err != nil {
+			return oldCtx.err
 		}
 	}
 
@@ -127,11 +144,14 @@ Terminates the context.
 For linger behavior, see: http://api.zeromq.org/2-2:zmq-term
 */
 func (ctx *Context) Term() error {
-	n, err := C.zmq_term(ctx.ctx)
-	if n != 0 {
-		return errget(err)
+	if ctx.opened {
+		ctx.opened = false
+		n, err := C.zmq_term(ctx.ctx)
+		if n != 0 {
+			ctx.err = errget(err)
+		}
 	}
-	return nil
+	return ctx.err
 }
 
 // Returns the size of the 0MQ thread pool in the current default context.
@@ -161,7 +181,10 @@ func SetIoThreads(n int) error {
 			return errget(err)
 		}
 		old = append(old, defaultCtx) // keep a reference, to prevent garbage collection
-		defaultCtx.ctx = c
+		defaultCtx = &Context{
+			ctx:    c,
+			opened: true,
+		}
 		nr_of_threads = n
 	}
 	return nil
@@ -305,8 +328,10 @@ Socket functions starting with `Set` or `Get` are used for setting and
 getting socket options.
 */
 type Socket struct {
-	soc unsafe.Pointer
-	ctx *Context
+	soc    unsafe.Pointer
+	ctx    *Context
+	opened bool
+	err    error
 }
 
 /*
@@ -348,9 +373,11 @@ func (ctx *Context) NewSocket(t Type) (soc *Socket, err error) {
 	s, e := C.zmq_socket(ctx.ctx, C.int(t))
 	if s == nil {
 		err = errget(e)
+		soc.err = err
 	} else {
 		soc.soc = s
 		soc.ctx = ctx
+		soc.opened = true
 		runtime.SetFinalizer(soc, (*Socket).Close)
 	}
 	return
@@ -358,12 +385,15 @@ func (ctx *Context) NewSocket(t Type) (soc *Socket, err error) {
 
 // If not called explicitly, the socket will be closed on garbage collection
 func (soc *Socket) Close() error {
-	if i, err := C.zmq_close(soc.soc); int(i) != 0 {
-		return errget(err)
+	if soc.opened {
+		soc.opened = false
+		if i, err := C.zmq_close(soc.soc); int(i) != 0 {
+			soc.err = errget(err)
+		}
+		soc.soc = unsafe.Pointer(nil)
+		soc.ctx = nil
 	}
-	soc.soc = unsafe.Pointer(nil)
-	soc.ctx = nil
-	return nil
+	return soc.err
 }
 
 /*
