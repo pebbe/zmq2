@@ -13,6 +13,8 @@ The following functions return ErrorNotImplemented in 0MQ version 2.1:
 
 http://www.zeromq.org/
 
+See also the wiki (for zmq4): https://github.com/pebbe/zmq4/wiki
+
 A note on the use of a context:
 
 This package provides a default context. This is what will be used by
