@@ -29,6 +29,8 @@ import (
 )
 
 var (
+	ErrorContextClosed  = errors.New("Context is closed")
+	ErrorSocketClosed   = errors.New("Socket is closed")
 	ErrorNotImplemented = errors.New("Not implemented, requires 0MQ version 2.2")
 )
 
@@ -329,7 +331,13 @@ type Socket struct {
 Socket as string.
 */
 func (soc Socket) String() string {
-	t, _ := soc.GetType()
+	if !soc.opened {
+		return "Socket(CLOSED)"
+	}
+	t, err := soc.GetType()
+	if err != nil {
+		return fmt.Sprintf("Socket(%v)", err)
+	}
 	i, err := soc.GetIdentity()
 	if err == nil && i != "" {
 		return fmt.Sprintf("Socket(%v,%q)", t, i)
@@ -361,6 +369,9 @@ For a description of socket types, see: http://api.zeromq.org/2-2:zmq-socket#toc
 */
 func (ctx *Context) NewSocket(t Type) (soc *Socket, err error) {
 	soc = &Socket{}
+	if !ctx.opened {
+		return soc, ErrorContextClosed
+	}
 	s, e := C.zmq_socket(ctx.ctx, C.int(t))
 	if s == nil {
 		err = errget(e)
@@ -393,6 +404,9 @@ Accept incoming connections on a socket.
 For a description of endpoint, see: http://api.zeromq.org/2-2:zmq-bind#toc2
 */
 func (soc *Socket) Bind(endpoint string) error {
+	if !soc.opened {
+		return ErrorSocketClosed
+	}
 	s := C.CString(endpoint)
 	defer C.free(unsafe.Pointer(s))
 	if i, err := C.zmq_bind(soc.soc, s); int(i) != 0 {
@@ -407,6 +421,9 @@ Create outgoing connection from socket.
 For a description of endpoint, see: http://api.zeromq.org/2-2:zmq-connect#toc2
 */
 func (soc *Socket) Connect(endpoint string) error {
+	if !soc.opened {
+		return ErrorSocketClosed
+	}
 	s := C.CString(endpoint)
 	defer C.free(unsafe.Pointer(s))
 	if i, err := C.zmq_connect(soc.soc, s); int(i) != 0 {
@@ -431,6 +448,9 @@ Receive a message part from a socket.
 For a description of flags, see: http://api.zeromq.org/2-2:zmq-recv#toc2
 */
 func (soc *Socket) RecvBytes(flags Flag) ([]byte, error) {
+	if !soc.opened {
+		return []byte{}, ErrorSocketClosed
+	}
 	var msg C.zmq_msg_t
 	if i, err := C.zmq_msg_init(&msg); i != 0 {
 		return []byte{}, errget(err)
@@ -474,6 +494,9 @@ Send a message part on a socket.
 For a description of flags, see: http://api.zeromq.org/2-2:zmq-send#toc2
 */
 func (soc *Socket) SendBytes(data []byte, flags Flag) (int, error) {
+	if !soc.opened {
+		return 0, ErrorSocketClosed
+	}
 	datac := C.CString(string(data))
 	var msg C.zmq_msg_t
 	if i, err := C.my_msg_init_data(&msg, unsafe.Pointer(datac), C.size_t(len(data))); i != 0 {
@@ -493,6 +516,9 @@ Start built-in ØMQ device
 see: http://api.zeromq.org/2-2:zmq-device#toc2
 */
 func Device(device Dev, frontend, backend *Socket) error {
+	if !(frontend.opened && backend.opened) {
+		return ErrorSocketClosed
+	}
 	_, err := C.zmq_device(C.int(device), frontend.soc, backend.soc)
 	return errget(err)
 }
