@@ -8,6 +8,12 @@ package zmq2
 #include "zmq2.h"
 #include <stdlib.h>
 #include <string.h>
+
+int
+    zmq2_major = ZMQ_VERSION_MAJOR,
+    zmq2_minor = ZMQ_VERSION_MINOR,
+    zmq2_patch = ZMQ_VERSION_PATCH;
+
 void my_free (void *data, void *hint) {
     free (data);
 }
@@ -35,6 +41,8 @@ var (
 )
 
 var (
+	major, minor, patch int
+
 	defaultCtx    *Context
 	old           []*Context
 	nr_of_threads int
@@ -50,6 +58,17 @@ func init() {
 		panic("Init of ZeroMQ context failed: " + errget(err).Error())
 	}
 	old = make([]*Context, 0)
+	major, minor, patch = Version()
+	if major != 2 {
+		panic("Using zmq2 with ZeroMQ major version " + fmt.Sprint(major))
+	}
+	if major != int(C.zmq2_major) || minor != int(C.zmq2_minor) || patch != int(C.zmq2_patch) {
+		panic(
+			fmt.Sprintf(
+				"zmq2 was installed with ZeroMQ version %d.%d.%d, but the application links with version %d.%d.%d",
+				int(C.zmq2_major), int(C.zmq2_minor), int(C.zmq2_patch),
+				major, minor, patch))
+	}
 }
 
 //. Util
