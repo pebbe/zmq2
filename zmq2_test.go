@@ -7,7 +7,7 @@ import (
 	"runtime"
 )
 
-func Example_version() {
+func Example_test_version() {
 	major, minor, _ := zmq.Version()
 	fmt.Println("Version major:", major)
 	fmt.Println("Version minor == 1|2:", minor == 1 || minor == 2)
