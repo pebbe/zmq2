@@ -184,7 +184,7 @@ this to zero, otherwise set it to at least one.
 This function creates a new default context without closing the old one.
 Use it before creating any sockets.
 
-Default value   1
+Default value: 1
 */
 func SetIoThreads(n int) error {
 	if n != nr_of_threads {
