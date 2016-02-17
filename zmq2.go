@@ -38,6 +38,7 @@ var (
 	ErrorContextClosed  = errors.New("Context is closed")
 	ErrorSocketClosed   = errors.New("Socket is closed")
 	ErrorNotImplemented = errors.New("Not implemented, requires 0MQ version 2.2")
+	ErrorNoSocket       = errors.New("No such socket")
 )
 
 var (
