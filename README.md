@@ -1,5 +1,8 @@
 A Go interface to [ZeroMQ](http://www.zeromq.org/) version 2.
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/pebbe/zmq2)](https://goreportcard.com/report/github.com/pebbe/zmq2)
+[![GoDoc](https://godoc.org/github.com/pebbe/zmq2?status.svg)](https://godoc.org/github.com/pebbe/zmq2)
+
 Requires ZeroMQ version 2.1 or 2.2
 
 For ZeroMQ version 4, see: http://github.com/pebbe/zmq4
