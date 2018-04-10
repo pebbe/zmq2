@@ -71,7 +71,7 @@ func init() {
 	nr_of_threads = 1
 	defaultCtx = &Context{}
 	defaultCtx.ctx, err = C.zmq_init(C.int(nr_of_threads))
-	if defaultCtx.ctx == nil || err != nil {
+	if defaultCtx.ctx == nil {
 		initContextError = fmt.Errorf("Init of ZeroMQ context failed: %v", errget(err))
 		return
 	}
